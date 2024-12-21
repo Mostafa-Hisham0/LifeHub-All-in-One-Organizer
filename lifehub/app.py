@@ -9,7 +9,11 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 from dotenv import load_dotenv
+from bson import ObjectId
+from forms import TodoForm
+from flask_pymongo import PyMongo
 
+# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
@@ -22,6 +26,12 @@ db = client['lifehub_db']
 users_collection = db['users_sitteings']
 activity_collection = db['activity_logs']
 events_collection = db['events_calender']
+
+# Flask-PyMongo setup
+app.config["SECRET_KEY"] = "f2330203d221db94b14488386f4ba3a5b0ee38c2b966327a"
+app.config["MONGO_URI"] = "mongodb://localhost:27017/lifehub_db"
+mongodb_client = PyMongo(app)
+db = mongodb_client.db
 
 # YouTube API setup
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
@@ -55,7 +65,7 @@ def search_youtube(query):
 
 def send_reminder(event_name, event_date, email):
     subject = f"Reminder: Upcoming Event - {event_name}"
-    body = f"Hi there,\n\nThis is a reminder for your upcoming event:\n\nEvent: {event_name}\nDate: {event_date}\n\nBest regards, LifHub."
+    body = f"Hi there,\n\nThis is a reminder for your upcoming event:\n\nEvent: {event_name}\nDate: {event_date}\n\nBest regards, LifeHub."
 
     msg = MIMEMultipart()
     msg['From'] = SENDER_EMAIL
@@ -74,6 +84,89 @@ def send_reminder(event_name, event_date, email):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route("/view_todos", methods=["GET"])
+def get_todos():
+    filter_option = request.args.get("filter", "all")
+    todos = []
+
+    # Adjusting query to filter todos based on completion status
+    if filter_option == "completed":
+        query = {"completed": "True"}
+    elif filter_option == "not_completed":
+        query = {"completed": "False"}
+    else:
+        query = {}
+
+    # Fetch todos from MongoDB, sorting by date created
+    for todo in db.todos_flask.find(query).sort("date_created", -1):
+        todo["_id"] = str(todo["_id"])
+        todo["date_created"] = todo["date_created"].strftime("%b %d %Y %H:%M:%S")
+        todos.append(todo)
+
+    return render_template("view_todos.html", todos=todos, filter_option=filter_option)
+
+@app.route("/add_todo", methods=["POST", "GET"])
+def add_todo():
+    form = TodoForm(request.form)
+    if request.method == "POST" and form.validate():
+        todo_data = {
+            "name": form.name.data,
+            "description": form.description.data,
+            "completed": form.completed.data,
+            "due_date": form.due_date.data.strftime("%Y-%m-%d"),
+            "priority": form.priority.data,
+            "date_created": datetime.utcnow(),
+        }
+        db.todos_flask.insert_one(todo_data)
+        flash("Todo successfully added", "success")
+        return redirect(url_for('get_todos'))
+
+    return render_template("add_todo.html", form=form)
+
+@app.route("/update_todo/<id>", methods=["POST", "GET"])
+def update_todo(id):
+    form = TodoForm(request.form)
+    if request.method == "POST" and form.validate():
+        updated_data = {
+            "name": form.name.data,
+            "description": form.description.data,
+            "completed": form.completed.data,
+            "due_date": form.due_date.data.strftime("%Y-%m-%d") if form.due_date.data else None,
+            "priority": form.priority.data,
+        }
+        db.todos_flask.find_one_and_update({"_id": ObjectId(id)}, {"$set": updated_data})
+        flash("Todo successfully updated", "success")
+        return redirect(url_for('get_todos'))
+
+    todo = db.todos_flask.find_one({"_id": ObjectId(id)})
+    if todo:
+        form.name.data = todo.get("name")
+        form.description.data = todo.get("description")
+        form.completed.data = todo.get("completed")
+        form.due_date.data = datetime.strptime(todo.get("due_date"), "%Y-%m-%d") if todo.get("due_date") else None
+        form.priority.data = todo.get("priority")
+
+    return render_template("add_todo.html", form=form)
+
+@app.route("/delete_todo/<id>")
+def delete_todo(id):
+    db.todos_flask.find_one_and_delete({"_id": ObjectId(id)})
+    flash("Todo successfully deleted", "success")
+    return redirect(url_for('get_todos'))
+
+@app.route("/view_todo/<id>")
+def view_todo(id):
+    todo = db.todos_flask.find_one({"_id": ObjectId(id)})
+    if not todo:
+        flash("Todo not found", "danger")
+        return redirect(url_for('get_todos'))
+    todo["_id"] = str(todo["_id"])
+    todo["date_created"] = todo["date_created"].strftime("%b %d %Y %H:%M:%S")
+    return render_template("view_todo.html", todo=todo)
+
+
+
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
@@ -175,7 +268,6 @@ def search():
 
     return render_template('search.html', movie=movie, video_links=video_links)
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     scheduler.start()
     app.run(debug=True)

@@ -1,5 +1,4 @@
-Flask==3.1.0
-pymongo==4.10.1
+flask==3.1.0
 smtplib==3.6.0  
 google-api-python-client==2.80.0
 python-dotenv==1.0.0
