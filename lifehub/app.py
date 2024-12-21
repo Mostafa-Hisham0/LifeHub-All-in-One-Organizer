@@ -217,7 +217,6 @@ def log_activity():
         # Calculate calories burned
         calories = (10.0 if activity_type == 'running' else 7.5 if activity_type == 'cycling' else 3.8) * weight * duration / 60
         
-        # Save the activity to the database
         activity_collection.insert_one({
             'weight': weight,
             'activity_type': activity_type,
