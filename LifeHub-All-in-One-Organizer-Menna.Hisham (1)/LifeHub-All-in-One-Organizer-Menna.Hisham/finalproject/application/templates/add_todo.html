@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Add New Todo</h1>
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">Task Name</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="completed">Completed</label>
+            <select id="completed" name="completed" class="form-control">
+                <option value="False">No</option>
+                <option value="True">Yes</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="due_date">Due Date</label>
+            <input type="date" id="due_date" name="due_date" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="priority">Priority</label>
+            <select id="priority" name="priority" class="form-control">
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Todo</button>
+    </form>
+</div>
+{% endblock %}
