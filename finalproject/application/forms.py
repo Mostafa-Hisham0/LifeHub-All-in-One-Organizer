@@ -1,9 +1,11 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SelectField, SubmitField
+from wtforms import StringField, TextAreaField, SelectField, SubmitField, DateField
 from wtforms.validators import DataRequired
 
 class TodoForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
+    name = StringField('Task Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
-    completed = SelectField('Completed', choices=[("False", "False"), ("True", "True")], validators=[DataRequired()])
-    submit = SubmitField("Add Todo")
+    completed = SelectField('Completed', choices=[("False", "No"), ("True", "Yes")], validators=[DataRequired()])
+    due_date = DateField('Due Date')
+    priority = SelectField('Priority', choices=[("Low", "Low"), ("Medium", "Medium"), ("High", "High")])
+    submit = SubmitField("Submit")

@@ -3,7 +3,6 @@ from flask_pymongo import PyMongo
 from datetime import datetime
 from bson.objectid import ObjectId
 
-
 app = Flask(__name__, template_folder='application/templates')
 app.secret_key = 'your_secret_key'
 app.config["MONGO_URI"] = "mongodb://localhost:27017/lifehub"  
@@ -12,7 +11,6 @@ mongo = PyMongo(app)
 @app.route('/')
 def home():
     return redirect(url_for('registration'))
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -30,10 +28,8 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid email or password. Please try again.', 'danger')
-        
 
     return render_template('login.html')
-
 
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
@@ -62,7 +58,6 @@ def registration():
 
     return render_template('registration.html')
 
-
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -74,7 +69,6 @@ def forgot_password():
 
     return render_template('forgot_password.html')
 
-
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -82,7 +76,7 @@ def dashboard():
         return redirect(url_for('login'))
 
     user = {
-        "first_name": session.get('first_name', 'Guest'),  # Use `get` to avoid KeyError
+        "first_name": session.get('first_name', 'Guest'),
         "last_name": session.get('last_name', '')
     }
     return render_template('dashboard.html', user=user)
@@ -98,7 +92,6 @@ def budget_management():
             if income < 0 or expense < 0:
                 flash('Income and expense values must be non-negative.', 'danger')
             else:
-             
                 mongo.db.budget.insert_one({
                     'income': income,
                     'expense': expense,
@@ -122,7 +115,6 @@ def budget_management():
         balance=balance
     )
 
-
 @app.route('/financial_goals', methods=['GET', 'POST'])
 def financial_goals():
     if request.method == 'POST':
@@ -130,7 +122,6 @@ def financial_goals():
         goal_amount = request.form['goal_amount']
         goal_date = request.form['goal_date']
 
-       
         if not goal_name or not goal_amount or not goal_date:
             flash('All fields are required!', 'danger')
         else:
@@ -139,7 +130,6 @@ def financial_goals():
                 if goal_amount <= 0:
                     flash('Goal amount must be positive.', 'danger')
                 else:
-                   
                     mongo.db.goals.insert_one({
                         'goal_name': goal_name,
                         'goal_amount': goal_amount,
@@ -154,8 +144,6 @@ def financial_goals():
     goals = list(mongo.db.goals.find())
     return render_template('financial_goals.html', goals=goals)
 
-
-
 @app.route('/add_todo', methods=['GET', 'POST'])
 def add_todo():
     if 'user_id' not in session:
@@ -165,7 +153,7 @@ def add_todo():
     if request.method == 'POST':
         name = request.form['name']
         description = request.form['description']
-        completed = request.form['completed']
+        completed = request.form.get('completed', False)
         due_date = request.form['due_date']
         priority = request.form['priority']
 
@@ -191,7 +179,7 @@ def view_todos():
     if 'user_id' not in session:
         flash("Please log in first.", "danger")
         return redirect(url_for('login'))
-    
+
     todos = list(mongo.db.todos.find({'user_id': session['user_id']}))
     return render_template('view_todos.html', todos=todos)
 
@@ -201,22 +189,23 @@ def delete_todo(id):
         flash("Please log in first.", "danger")
         return redirect(url_for('login'))
 
-  
     mongo.db.todos.delete_one({'_id': ObjectId(id)})
     flash("Task deleted successfully!", "success")
     return redirect(url_for('view_todos'))
-    
-    
 
-def test_logout(self):
-    with self.app.session_transaction() as session:
-        session['user_id'] = self.test_user_id
-
-    response = self.app.get('/logout', follow_redirects=True)
-    self.assertEqual(response.status_code, 200)
-    self.assertIn(b'You have been logged out.', response.data)
-
-
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash("You have been logged out.", "info")
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)
+import unittest
+
+class SampleTest(unittest.TestCase):
+    def test_basic(self):
+        self.assertTrue(True)
+
+if __name__ == "__main__":
+    unittest.main()

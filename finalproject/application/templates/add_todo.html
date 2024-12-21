@@ -2,63 +2,36 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1>Add New To-Do</h1>
-    <form method="POST" action="{{ url_for('add_todo') }}">
-        {{ form.hidden_tag() }}  
-        <fieldset class="form-group">
-            <legend>To-Do Details</legend>
-
-            <div class="form-group">
-                {{ form.name.label(class="form-control-label") }}
-                {% if form.name.errors %}
-                    {{ form.name(class="form-control is-invalid") }}
-                    {% for error in form.name.errors %}
-                        <div class="invalid-feedback">{{ error }}</div>
-                    {% endfor %}
-                {% else %}
-                    {{ form.name(class="form-control") }}
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ form.completed.label(class="form-control-label") }}
-                {% if form.completed.errors %}
-                    {{ form.completed(class="form-control is-invalid") }}
-                    {% for error in form.completed.errors %}
-                        <div class="invalid-feedback">{{ error }}</div>
-                    {% endfor %}
-                {% else %}
-                    {{ form.completed(class="form-control") }}
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ form.description.label(class="form-control-label") }}
-                {% if form.description.errors %}
-                    {{ form.description(class="form-control is-invalid") }}
-                    {% for error in form.description.errors %}
-                        <div class="invalid-feedback">{{ error }}</div>
-                    {% endfor %}
-                {% else %}
-                    {{ form.description(class="form-control") }}
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
-            </div>
-        </fieldset>
+    <h1>Add New Todo</h1>
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">Task Name</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="completed">Completed</label>
+            <select id="completed" name="completed" class="form-control">
+                <option value="False">No</option>
+                <option value="True">Yes</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="due_date">Due Date</label>
+            <input type="date" id="due_date" name="due_date" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="priority">Priority</label>
+            <select id="priority" name="priority" class="form-control">
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Todo</button>
     </form>
-
-   
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="alert mt-3">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
 </div>
 {% endblock %}
