@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Habit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select, button {
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        p {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Add New Habit</h1>
+    <form method="POST">
+        <label for="habit_name">Habit Name:</label>
+        <input type="text" id="habit_name" name="habit_name">
+        <br>
+        <label for="frequency">Frequency:</label>
+        <select id="frequency" name="frequency">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+        </select>
+        <br>
+        <button type="submit">Add Habit</button>
+    </form>
+    {% if error %}
+    <p>{{ error }}</p>
+    {% endif %}
+</body>
+</html>
